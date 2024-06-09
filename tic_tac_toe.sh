@@ -1,5 +1,6 @@
 #!/bin/bash
 clear
+echo
 echo "Wellcome to 'TicTacToe'"
 echo
 echo "Controls:"
@@ -10,7 +11,6 @@ echo
 
 read -p "Press Enter to Start"
 
-
 declare -r EMPTY='_'
 declare -r X='X'
 declare -r O='O'
@@ -19,11 +19,21 @@ declare -r NO_ONE='N'
 declare -r BOARD_LEN=9
 move=''
 
+get_confirm() {
+  while true
+  do
+    read x
+    case "$x" in
+      y | yes | Y | Yes | YES | "" )
+        return 0;;
+      n | no | N | No | NO )
+        return 1;;
+      *) echo "Please enter yes or no" ;;
+    esac
+  done
+}
 
-
-
-
-function check_collision {
+check_collision() {
 	eval tmp=\${"row${coordinatesY[$move]}[${coordinatesX[$move]}]"}
     if [ "$tmp" == "_" ]; then	
         return 1
@@ -42,23 +52,22 @@ display_board() {
 }
 
 
-function fillboard {
+fillboard() {
 	board=( $EMPTY $EMPTY $EMPTY $EMPTY $EMPTY $EMPTY $EMPTY $EMPTY $EMPTY )
 }
 
 
 
-function humanPiece {
+humanPiece() {
 	echo -n "Do you require the first move? Y/n: "
-	read answer
-	if [[ $answer == "n" || $answer == "N" ]]; then
-		human=$O
-	else
+	if get_confirm ; then
 		human=$X
+	else
+		human=$O
 	fi
 }
 
-function opponent {
+opponent() {
 	if [[ $1 == $X ]]; then 
 		echo "$O"
 	else
@@ -67,19 +76,18 @@ function opponent {
 }
 
 
-function repeat {
+repeat() {
 	echo -n "Do you want repeat Game? Y/n: "
-	read answer
-	if [[ $answer == "n" || $answer == "N" ]]; then
+	if get_confirm ; then
+    return 0
+  fi
 		echo "Game over."
 		exit
-	fi
-	return 0
 }
 
 
 
-function askHumanMove {
+askHumanMove() {
 	while true; do
 		echo "Where will you move? 0..8"
 		read move
@@ -88,7 +96,7 @@ function askHumanMove {
 }
 
 
-function winner {
+winner() {
 	declare -r TOTAL_ROWS=8
 	declare -i row
 
@@ -102,9 +110,11 @@ function winner {
   win7=(2 4 6)
 
   for ((row=0; row < TOTAL_ROWS; row++)); do
-    if [[ "${board[$((win$row[0]))]}" != "$EMPTY" ]] && [[ "${board[$((win$row[0]))]}" == "${board[$((win$row[1]))]}" && "${board[$((win$row[1]))]}" == "${board[$((win$row[2]))]}" ]]; then
-          echo "${board[$((win$row[0]))]}"
-          return
+    if [[ "${board[$((win$row[0]))]}" != "$EMPTY" ]] \
+      && [[ "${board[$((win$row[0]))]}" == "${board[$((win$row[1]))]}" \
+      && "${board[$((win$row[1]))]}" == "${board[$((win$row[2]))]}" ]]; then
+      echo "${board[$((win$row[0]))]}"
+      return
     fi
   done
 
@@ -121,7 +131,7 @@ function winner {
 }
 
 
-function computerMove {
+computerMove() {
 	move=0
 	local found=false
 
@@ -140,7 +150,6 @@ function computerMove {
 	done
 
 
-
 	if [[ $found != true ]]; then
 		move=0
 		while [[ $found != true ]] && [[ $move -lt $BOARD_LEN ]]; do
@@ -155,9 +164,7 @@ function computerMove {
 				move=$move+1
 			fi
 		done
-
 	fi
-
 
 
 	if [[ $found != true ]]; then
@@ -179,20 +186,16 @@ function computerMove {
 }
 
 
-
 while true; do
-	fillboard
+  fillboard
 
-	humanPiece
-	computer=$(opponent $human)
+  humanPiece
+  computer=$(opponent $human)
 
-
-	turn=$X
-	display_board
-	winner
+  turn=$X
+  display_board
 
 	while [[ $(winner) == $NO_ONE ]]; do
-
 
 	  if [[ $turn == $human ]]; then
 
@@ -211,7 +214,6 @@ while true; do
 		display_board
 		turn=$(opponent $turn)
 
-
 	done
 
 	if [[ $(winner) == $computer ]]; then
@@ -225,7 +227,6 @@ while true; do
 	if repeat; then
 		fillboard
 	fi
-
 
 done
 
